@@ -1,8 +1,11 @@
 $path = "kv/path/to/secret"
 $outFile = ".env"
-$vault_addr = "https://localhost:443"
+$user = "testuser"
+$env:VAULT_ADDR = "http://localhost:8200"
+# $password = "28f231ff-d38c-4d49-ac10-24f06d258aae"
 
-$s = vault kv get -format=json -address $vault_addr -tls-skip-verify $path| ConvertFrom-Json
+# vault login -method=userpass username=$user #password=$password
+$s = vault kv get -format=json $path| ConvertFrom-Json
 $kv = $s.data.data   # KV v2
 
 $lines = $kv.PSObject.Properties | ForEach-Object {

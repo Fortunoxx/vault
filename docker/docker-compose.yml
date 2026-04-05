@@ -1,30 +1,38 @@
 services:
-  vault:
-    privileged: true
-    image: "hashicorp/vault:latest"
-    restart: unless-stopped
-    container_name: vault
-    ports:
-    - "8201:8201"
-    - "443:8200"
-    environment:
-      VAULT_API_ADDR: "https://vault.test.lan"
-      VAULT_CACERT: /vault/userconfig/tls/ca.crt
-    cap_add:
-    - IPC_LOCK
-    volumes:
-    - ./audit:/vault/audit
-    - ./config:/vault/config
-    - ./data:/vault/data
-    - ./file:/vault/file
-    - ./logs:/vault/logs
-    - ./userconfig:/vault/userconfig
-    - ./plugins:/vault/plugins
-    # - ./certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt
-    command: vault server -config=/vault/config/vault-config.hcl
-    networks:
-    - services_net
+    vault:
+        image: hashicorp/vault:latest
+        container_name: vault
+        restart: unless-stopped
+        cap_add:
+            - IPC_LOCK
+        ports:
+            - "8200:8200"
+        environment:
+            VAULT_ADDR: http://127.0.0.1:8200
+            VAULT_LOCAL_CONFIG: |
+                {
+                    "disable_mlock": true,
+                    "ui": true,
+                    "listener": [
+                        {
+                            "tcp": {
+                                "address": "0.0.0.0:8200",
+                                "tls_disable": 1
+                            }
+                        }
+                    ],
+                    "storage": {
+                        "raft": {
+                            "path": "/vault/data",
+                            "node_id": "vault-1"
+                        }
+                    },
+                    "api_addr": "http://127.0.0.1:8200",
+                    "cluster_addr": "http://127.0.0.1:8201"
+                }
+        command: server
+        volumes:
+            - vault_data:/vault/data
 
-networks:
-  services_net:
-    driver: bridge
+volumes:
+    vault_data:

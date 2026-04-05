@@ -1,8 +1,2 @@
 .env
-*.key
-*.crt
-*.key
-*.csr
-*.srl
 init-keys.json
-data
